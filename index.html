@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Form Validation Demo — Sign Up</title>
+<style>
+  :root { --navy:#0B1F3A; --blue:#1769AA; --cyan:#20A4D8; --sky:#EAF6FC; --carbon:#111827; --slate:#64748B; --red:#dc2626; --green:#16a34a; }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  body { font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif; background:var(--sky); color:var(--carbon); padding:24px 16px 48px; }
+  .wrap { max-width:520px; margin:0 auto; }
+  header { text-align:center; margin-bottom:20px; }
+  header h1 { color:var(--navy); font-size:1.7rem; margin-bottom:6px; }
+  header p { color:var(--slate); font-size:.95rem; }
+  form { background:#fff; border:1px solid #dbe7f0; border-radius:12px; padding:22px; }
+  .field { margin-bottom:16px; }
+  label { display:block; font-weight:600; font-size:.9rem; margin-bottom:5px; color:var(--navy); }
+  label .req { color:var(--red); }
+  input[type=text], input[type=email], input[type=tel], input[type=password], input[type=date], select {
+    width:100%; padding:10px 12px; font-size:1rem; border:2px solid #cbd5e1; border-radius:8px; outline:none;
+  }
+  input:focus, select:focus { border-color:var(--cyan); }
+  input.valid { border-color:var(--green); }
+  input.invalid { border-color:var(--red); }
+  .error { display:none; color:var(--red); font-size:.85rem; margin-top:4px; }
+  .error.show { display:block; }
+  .ok { display:none; color:var(--green); font-size:.85rem; margin-top:4px; }
+  .ok.show { display:block; }
+  .meter { height:8px; background:#e2e8f0; border-radius:99px; overflow:hidden; margin-top:6px; }
+  .meter div { height:100%; width:0; background:var(--red); transition:width .25s, background .25s; }
+  .meter-label { font-size:.85rem; color:var(--slate); margin-top:4px; }
+  .check { display:flex; gap:8px; align-items:flex-start; font-size:.92rem; }
+  .check input { margin-top:3px; accent-color:var(--blue); }
+  .row { display:flex; gap:12px; }
+  .row .field { flex:1; }
+  button { width:100%; padding:12px; font-size:1.05rem; font-weight:700; color:#fff; background:var(--blue); border:none; border-radius:8px; cursor:pointer; }
+  button:hover { background:var(--navy); }
+  button:disabled { background:#94a3b8; cursor:not-allowed; }
+  .success { display:none; margin-top:16px; background:#e7f7ee; border:1px solid #86efac; color:#14532d; border-radius:10px; padding:14px 16px; line-height:1.5; }
+  .success.show { display:block; }
+  .rules { margin-top:20px; background:#fff; border:1px solid #dbe7f0; border-radius:12px; padding:16px 18px; font-size:.9rem; color:var(--slate); line-height:1.7; }
+  .rules strong { color:var(--navy); }
+  @media (max-width:480px){ .row{flex-direction:column; gap:0;} }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>📝 Sign-Up Form Validation</h1>
+    <p>A registration form with live JavaScript validation — errors appear as you type, and the form only submits when everything is valid.</p>
+  </header>
+
+  <form id="signupForm" novalidate>
+    <div class="row">
+      <div class="field">
+        <label for="firstName">First name <span class="req">*</span></label>
+        <input type="text" id="firstName" autocomplete="given-name" placeholder="Ali">
+        <p class="error" id="firstNameError"></p>
+      </div>
+      <div class="field">
+        <label for="lastName">Last name <span class="req">*</span></label>
+        <input type="text" id="lastName" autocomplete="family-name" placeholder="Ahmed">
+        <p class="error" id="lastNameError"></p>
+      </div>
+    </div>
+
+    <div class="field">
+      <label for="email">Email <span class="req">*</span></label>
+      <input type="email" id="email" autocomplete="email" placeholder="ali@example.com">
+      <p class="error" id="emailError"></p>
+      <p class="ok" id="emailOk">✓ Looks good.</p>
+    </div>
+
+    <div class="field">
+      <label for="phone">Mobile (Pakistan) <span class="req">*</span></label>
+      <input type="tel" id="phone" autocomplete="tel" placeholder="03XX-XXXXXXX">
+      <p class="error" id="phoneError"></p>
+      <p class="ok" id="phoneOk">✓ Valid Pakistani mobile number.</p>
+    </div>
+
+    <div class="field">
+      <label for="dob">Date of birth <span class="req">*</span></label>
+      <input type="date" id="dob" max="2026-11-06">
+      <p class="error" id="dobError"></p>
+    </div>
+
+    <div class="field">
+      <label for="city">City</label>
+      <select id="city">
+        <option value="">— Select (optional) —</option>
+        <option>Karachi</option><option>Lahore</option><option>Islamabad</option>
+        <option>Rawalpindi</option><option>Faisalabad</option><option>Multan</option>
+        <option>Peshawar</option><option>Quetta</option><option>Other</option>
+      </select>
+    </div>
+
+    <div class="field">
+      <label for="password">Password <span class="req">*</span></label>
+      <input type="password" id="password" autocomplete="new-password" placeholder="At least 8 characters">
+      <div class="meter"><div id="meterBar"></div></div>
+      <p class="meter-label" id="meterLabel">Strength: —</p>
+      <p class="error" id="passwordError"></p>
+    </div>
+
+    <div class="field">
+      <label for="confirmPassword">Confirm password <span class="req">*</span></label>
+      <input type="password" id="confirmPassword" autocomplete="new-password" placeholder="Repeat your password">
+      <p class="error" id="confirmPasswordError"></p>
+    </div>
+
+    <div class="field check">
+      <input type="checkbox" id="terms">
+      <label for="terms" style="font-weight:400;">I agree to the terms and conditions <span class="req">*</span></label>
+    </div>
+    <p class="error" id="termsError" style="margin:-8px 0 12px;"></p>
+
+    <button type="submit" id="submitBtn" disabled>Create account</button>
+  </form>
+
+  <div class="success" id="successBox"></div>
+
+  <div class="rules">
+    <strong>Validation rules in this demo:</strong>
+    <ul style="margin-left:18px;">
+      <li>Names: at least 2 letters, letters/spaces only.</li>
+      <li>Email: standard format (name@domain.tld).</li>
+      <li>Mobile: Pakistani format — 03XX-XXXXXXX or 03XXXXXXXXX (11 digits starting with 03).</li>
+      <li>Date of birth: must be a real past date, age 13 or older.</li>
+      <li>Password: 8+ characters with a letter and a number; strength meter rewards length, mixed case, digits and symbols.</li>
+      <li>Confirm password must match. Terms must be accepted.</li>
+      <li>The submit button stays disabled until every field is valid.</li>
+    </ul>
+    <p style="margin-top:8px;">Demo only — nothing is sent to a server; on success the form shows a confirmation summary.</p>
+  </div>
+</div>
+
+<script>
+const form = document.getElementById("signupForm");
+const submitBtn = document.getElementById("submitBtn");
+const successBox = document.getElementById("successBox");
+
+function setState(input, errorEl, okEl, message, valid) {
+  input.classList.toggle("invalid", !valid && message !== "");
+  input.classList.toggle("valid", valid && input.value.trim() !== "");
+  if (errorEl) { errorEl.textContent = message; errorEl.classList.toggle("show", !valid && message !== ""); }
+  if (okEl) okEl.classList.toggle("show", valid && input.value.trim() !== "");
+  return valid;
+}
+
+function validateName(id, errId) {
+  const input = document.getElementById(id);
+  const v = input.value.trim();
+  if (v === "") return setState(input, document.getElementById(errId), null, "This field is required.", false);
+  if (v.length < 2) return setState(input, document.getElementById(errId), null, "At least 2 characters.", false);
+  if (!/^[A-Za-zÀ-ÿ' -]+$/.test(v)) return setState(input, document.getElementById(errId), null, "Letters, spaces, hyphens and apostrophes only.", false);
+  return setState(input, document.getElementById(errId), null, "", true);
+}
+
+function validateEmail() {
+  const input = document.getElementById("email");
+  const v = input.value.trim();
+  if (v === "") return setState(input, document.getElementById("emailError"), document.getElementById("emailOk"), "Email is required.", false);
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v)) return setState(input, document.getElementById("emailError"), document.getElementById("emailOk"), "Enter a valid email, e.g. ali@example.com.", false);
+  return setState(input, document.getElementById("emailError"), document.getElementById("emailOk"), "", true);
+}
+
+function validatePhone() {
+  const input = document.getElementById("phone");
+  const digits = input.value.replace(/\D/g, "");
+  if (input.value.trim() === "") return setState(input, document.getElementById("phoneError"), document.getElementById("phoneOk"), "Mobile number is required.", false);
+  if (!/^03\d{9}$/.test(digits)) return setState(input, document.getElementById("phoneError"), document.getElementById("phoneOk"), "Enter an 11-digit Pakistani mobile starting with 03 (e.g. 0301-2345678).", false);
+  return setState(input, document.getElementById("phoneError"), document.getElementById("phoneOk"), "", true);
+}
+
+function validateDob() {
+  const input = document.getElementById("dob");
+  const err = document.getElementById("dobError");
+  if (!input.value) return setState(input, err, null, "Date of birth is required.", false);
+  const dob = new Date(input.value + "T00:00:00");
+  const now = new Date();
+  if (isNaN(dob.getTime())) return setState(input, err, null, "Enter a valid date.", false);
+  if (dob > now) return setState(input, err, null, "Date of birth cannot be in the future.", false);
+  let age = now.getFullYear() - dob.getFullYear();
+  const m = now.getMonth() - dob.getMonth();
+  if (m < 0 || (m === 0 && now.getDate() < dob.getDate())) age--;
+  if (age < 13) return setState(input, err, null, "You must be at least 13 years old.", false);
+  return setState(input, err, null, "", true);
+}
+
+function passwordScore(pw) {
+  let s = 0;
+  if (pw.length >= 8) s++;
+  if (pw.length >= 12) s++;
+  if (/[a-z]/.test(pw) && /[A-Z]/.test(pw)) s++;
+  if (/\d/.test(pw)) s++;
+  if (/[^A-Za-z0-9]/.test(pw)) s++;
+  return s; // 0..5
+}
+
+function validatePassword() {
+  const input = document.getElementById("password");
+  const pw = input.value;
+  const bar = document.getElementById("meterBar");
+  const label = document.getElementById("meterLabel");
+  const score = passwordScore(pw);
+  const pct = ["0%", "20%", "40%", "60%", "80%", "100%"][score];
+  const names = ["—", "Very weak", "Weak", "Fair", "Strong", "Very strong"];
+  const colors = ["#dc2626", "#dc2626", "#f59e0b", "#eab308", "#16a34a", "#16a34a"];
+  bar.style.width = pw ? pct : "0%";
+  bar.style.background = colors[score];
+  label.textContent = "Strength: " + (pw ? names[score] : "—");
+  if (pw === "") return setState(input, document.getElementById("passwordError"), null, "Password is required.", false);
+  if (pw.length < 8) return setState(input, document.getElementById("passwordError"), null, "At least 8 characters.", false);
+  if (!/[A-Za-z]/.test(pw) || !/\d/.test(pw)) return setState(input, document.getElementById("passwordError"), null, "Include at least one letter and one number.", false);
+  return setState(input, document.getElementById("passwordError"), null, "", true);
+}
+
+function validateConfirm() {
+  const input = document.getElementById("confirmPassword");
+  const pw = document.getElementById("password").value;
+  if (input.value === "") return setState(input, document.getElementById("confirmPasswordError"), null, "Please confirm your password.", false);
+  if (input.value !== pw) return setState(input, document.getElementById("confirmPasswordError"), null, "Passwords do not match.", false);
+  return setState(input, document.getElementById("confirmPasswordError"), null, "", true);
+}
+
+function validateTerms() {
+  const ok = document.getElementById("terms").checked;
+  const err = document.getElementById("termsError");
+  err.textContent = ok ? "" : "Please accept the terms to continue.";
+  err.classList.toggle("show", !ok);
+  return ok;
+}
+
+function validateAll() {
+  const results = [
+    validateName("firstName", "firstNameError"),
+    validateName("lastName", "lastNameError"),
+    validateEmail(),
+    validatePhone(),
+    validateDob(),
+    validatePassword(),
+    validateConfirm(),
+    validateTerms(),
+  ];
+  const allValid = results.every(Boolean);
+  submitBtn.disabled = !allValid;
+  return allValid;
+}
+
+// Live validation on every keystroke / change
+["firstName", "lastName", "email", "phone", "dob", "password", "confirmPassword"].forEach(id => {
+  const el = document.getElementById(id);
+  el.addEventListener("input", validateAll);
+  el.addEventListener("blur", validateAll);
+});
+document.getElementById("terms").addEventListener("change", validateAll);
+document.getElementById("city").addEventListener("change", validateAll);
+
+form.addEventListener("submit", e => {
+  e.preventDefault();
+  if (!validateAll()) return;
+  const name = document.getElementById("firstName").value.trim() + " " + document.getElementById("lastName").value.trim();
+  const email = document.getElementById("email").value.trim();
+  const city = document.getElementById("city").value || "—";
+  successBox.innerHTML = "✅ <strong>Account created (demo)!</strong><br>Welcome, " + name +
+    " — your account for <strong>" + email + "</strong> is ready." +
+    (city !== "—" ? " City: " + city + "." : "") +
+    "<br><em>No data was sent anywhere — this is a front-end demo.</em>";
+  successBox.classList.add("show");
+  form.reset();
+  document.querySelectorAll("input").forEach(i => i.classList.remove("valid", "invalid"));
+  document.querySelectorAll(".ok").forEach(o => o.classList.remove("show"));
+  document.getElementById("meterBar").style.width = "0%";
+  document.getElementById("meterLabel").textContent = "Strength: —";
+  submitBtn.disabled = true;
+  successBox.scrollIntoView({ behavior: "smooth", block: "center" });
+});
+
+validateAll(); // initial state: submit disabled
+</script>
+</body>
+</html>
